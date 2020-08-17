@@ -1,0 +1,8 @@
+github.com/billgraziano/dpapi v0.1.0/go.mod h1:udRHWsIhi3NnTt6CvKvUQFBdiIr4CC/FCfN6GxaN/u0=
+github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f h1:QTRRO+ozoYgT3CQRIzNVYJRU3DB8HRnkZv6mr4ISmMA=
+github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f/go.mod h1:2zXcozF6qYGgmsG+SeTZz3oAbFLdD3OWqnUbNvJZAlc=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/tlarsen7572/goalteryx v0.0.17 h1:ZYI7B6zLXDrNB5OYbrqkQF36/qc5FrK7t0NWqZr22vE=
+github.com/tlarsen7572/goalteryx v0.0.17/go.mod h1:gOTlt/oKDY9UIojXB+EK9MfQBE7y3HkSMjLSaBY0Ptw=
+github.com/tlarsen7572/goalteryx v0.0.18 h1:efm2H+5yV972FT+Y/YXCHVNL/pN9V8NHQeAG8V6YbIU=
+github.com/tlarsen7572/goalteryx v0.0.18/go.mod h1:gOTlt/oKDY9UIojXB+EK9MfQBE7y3HkSMjLSaBY0Ptw=

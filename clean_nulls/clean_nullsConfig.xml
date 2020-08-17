@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<AlteryxJavaScriptPlugin>
+  <EngineSettings EngineDll="go_tools.dll" EngineDllEntryPoint="CleanNulls" SDKVersion="10.1" />
+  <GuiSettings Html="clean_nulls.html" Icon="clean_nulls.png" Help="" SDKVersion="10.1">
+    <InputConnections>
+      <Connection Name="Input" AllowMultiple="False" Optional="False" Type="Connection" Label=""/>
+    </InputConnections>
+    <OutputConnections>
+      <Connection Name="Output" AllowMultiple="False" Optional="False" Type="Connection" Label=""/>
+    </OutputConnections>
+  </GuiSettings>
+  <Properties>
+    <MetaInfo>
+      <Name>Clean Nulls</Name>
+      <Description>Converts string fields to empty strings, numbers to 0, bools to false, and leaves the other fields alone.</Description>
+      <CategoryName>ayx_builders</CategoryName>
+      <SearchTags>go, sdk</SearchTags>
+      <ToolVersion>1.00</ToolVersion>
+      <Author>tlarsendataguy</Author>
+      <Company></Company>
+      <Copyright>2020</Copyright>
+    </MetaInfo>
+  </Properties>
+</AlteryxJavaScriptPlugin>
