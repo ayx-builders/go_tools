@@ -40,7 +40,7 @@ func (i *Ii) Init(recordInfoIn string) bool {
 		generator.AddField(fieldInfo, `Field Sorter`)
 	}
 	i.outInfo = generator.GenerateRecordInfo()
-	i.copier, err = recordcopier.New(i.outInfo, i.inInfo, mapping)
+	i.copier, err = recordcopier.New(i.outInfo, i.inInfo.GenerateRecordBlobReader(), mapping)
 	if err != nil {
 		api.OutputMessage(i.toolId, api.Error, err.Error())
 		return false

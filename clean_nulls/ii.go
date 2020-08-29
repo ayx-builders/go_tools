@@ -37,7 +37,7 @@ func (i *Ii) Init(recordInfoIn string) bool {
 			SourceIndex:      index,
 		}
 	}
-	i.copier, err = recordcopier.New(i.info, i.info, copierMap)
+	i.copier, err = recordcopier.New(i.info, i.info.GenerateRecordBlobReader(), copierMap)
 	if err != nil {
 		api.OutputMessage(i.toolId, api.Error, err.Error())
 		return false
@@ -56,22 +56,22 @@ func (i *Ii) PushRecord(record recordblob.RecordBlob) bool {
 		field, _ := i.info.GetFieldByIndex(index)
 		switch field.Type {
 		case recordinfo.Byte, recordinfo.Int16, recordinfo.Int32, recordinfo.Int64:
-			_, isNull, _ := i.info.GetCurrentInt(field.Name)
+			isNull, _ := i.info.GetCurrentNull(field.Name)
 			if isNull {
 				_ = i.info.SetIntField(field.Name, 0)
 			}
 		case recordinfo.Float, recordinfo.Double, recordinfo.FixedDecimal:
-			_, isNull, _ := i.info.GetCurrentFloat(field.Name)
+			isNull, _ := i.info.GetCurrentNull(field.Name)
 			if isNull {
 				_ = i.info.SetFloatField(field.Name, 0)
 			}
 		case recordinfo.String, recordinfo.WString, recordinfo.V_WString, recordinfo.V_String:
-			_, isNull, _ := i.info.GetCurrentString(field.Name)
+			isNull, _ := i.info.GetCurrentNull(field.Name)
 			if isNull {
 				_ = i.info.SetStringField(field.Name, ``)
 			}
 		case recordinfo.Bool:
-			_, isNull, _ := i.info.GetCurrentBool(field.Name)
+			isNull, _ := i.info.GetCurrentNull(field.Name)
 			if isNull {
 				_ = i.info.SetBoolField(field.Name, false)
 			}
