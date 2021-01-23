@@ -2,58 +2,68 @@ package field_sorter
 
 import (
 	"encoding/xml"
-	"github.com/tlarsen7572/goalteryx/api"
-	"github.com/tlarsen7572/goalteryx/output_connection"
-	"github.com/tlarsen7572/goalteryx/presort"
+	"fmt"
+	"github.com/tlarsen7572/goalteryx/sdk"
 )
 
-type Plugin struct {
-	toolId int
-	config *config
-	output output_connection.OutputConnection
-}
-
 type config struct {
-	Alphabetical bool    `xml:"alphabetical"`
-	Fields       []field `xml:",any"`
+	Alphabetical bool            `xml:"alphabetical"`
+	Fields       []FieldSortInfo `xml:",any"`
 }
 
-type field struct {
+type FieldSortInfo struct {
 	IsPattern bool   `xml:"isPattern"`
 	Text      string `xml:"text"`
 }
 
-func (p *Plugin) Init(toolId int, configStr string) bool {
-	p.toolId = toolId
+type Plugin struct {
+	config   *config
+	output   sdk.OutputAnchor
+	info     *sdk.OutgoingRecordInfo
+	provider sdk.Provider
+}
+
+func (p *Plugin) Init(provider sdk.Provider) {
+	p.provider = provider
 	p.config = &config{}
-	err := xml.Unmarshal([]byte(configStr), p.config)
+	err := xml.Unmarshal([]byte(provider.ToolConfig()), p.config)
 	if err != nil {
-		api.OutputMessage(toolId, api.Error, err.Error())
-		return false
+		provider.Io().Error(err.Error())
 	}
-	p.output = output_connection.New(toolId, `Output`, 10)
-	return true
+	p.output = provider.GetOutputAnchor(`Output`)
 }
 
-func (p *Plugin) PushAllRecords(_ int) bool {
-	panic("PushAllRecords is invalid")
+func (p *Plugin) OnInputConnectionOpened(connection sdk.InputConnection) {
+	metadata := connection.Metadata()
+	editor := metadata.Clone()
+
+	incomingFields := metadata.Fields()
+	fieldNames := make([]string, len(incomingFields))
+	for index, field := range incomingFields {
+		fieldNames[index] = field.Name
+	}
+	sortedFields, err := SortFields(fieldNames, p.config.Fields, p.config.Alphabetical)
+	if err != nil {
+		p.provider.Io().Error(fmt.Sprintf(`error sorting fields: %v`, err.Error()))
+		return
+	}
+	for index, field := range sortedFields {
+		err = editor.MoveField(field, index)
+		if err != nil {
+			p.provider.Io().Error(fmt.Sprintf(`error moving field %v to position %v: %v`, field, index, err.Error()))
+			return
+		}
+	}
+	p.info = editor.GenerateOutgoingRecordInfo()
+	p.output.Open(p.info)
 }
 
-func (p *Plugin) Close(_ bool) {}
-
-func (p *Plugin) AddIncomingConnection(_ string, _ string) (api.IncomingInterface, *presort.PresortInfo) {
-	return &Ii{
-		toolId: p.toolId,
-		config: p.config,
-		output: p.output,
-	}, nil
+func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
+	packet := connection.Read()
+	for packet.Next() {
+		p.info.CopyFrom(packet.Record())
+		p.output.Write()
+	}
 }
 
-func (p *Plugin) AddOutgoingConnection(_ string, connectionInterface *api.ConnectionInterfaceStruct) bool {
-	p.output.Add(connectionInterface)
-	return true
-}
-
-func (p *Plugin) GetToolId() int {
-	return p.toolId
-}
+func (p *Plugin) OnComplete() {}

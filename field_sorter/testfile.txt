@@ -1,0 +1,3 @@
+Field1|Field2|Field3|Field4|Field5|Field6
+Int64 |Int64 |Int64 |Int64 |Int64 |Int64
+1     |2     |3     |4     |5     |6

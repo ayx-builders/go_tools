@@ -1,75 +1,97 @@
 package field_sorter
 
 import (
-	"github.com/tlarsen7572/goalteryx/recordcopier"
 	"regexp"
 	"sort"
 )
 
-type sourceField struct {
-	name  string
-	index int
+func SortFields(fields []string, sortInfo []FieldSortInfo, sortAlphabetical bool) ([]string, error) {
+	sorter := &fieldSorter{
+		fields:             fields,
+		sortInfo:           sortInfo,
+		sortAlphabetical:   sortAlphabetical,
+		destinationIndex:   0,
+		destinationIndices: make([]string, len(fields)),
+	}
+	return sorter.Sort()
 }
 
-func sortFields(fields []string, sortInfo []field, sortAlphabetical bool) ([]recordcopier.IndexMap, error) {
-	sourceFields := make([]sourceField, len(fields))
-	for index, field := range fields {
-		sourceFields[index] = sourceField{
-			name:  field,
-			index: index,
-		}
+type fieldSorter struct {
+	fields             []string
+	sortInfo           []FieldSortInfo
+	sortAlphabetical   bool
+	destinationIndex   int
+	destinationIndices []string
+}
+
+func (f *fieldSorter) Sort() ([]string, error) {
+	f.sortAlphabeticallyIfNeeded()
+	err := f.processRules()
+	if err != nil {
+		return nil, err
 	}
-	if sortAlphabetical {
-		sort.SliceStable(sourceFields, func(i, j int) bool {
-			return sourceFields[i].name < sourceFields[j].name
-		})
+	f.appendUnsortedFields()
+	return f.destinationIndices, nil
+}
+
+func (f *fieldSorter) sortAlphabeticallyIfNeeded() {
+	if f.sortAlphabetical {
+		sort.Strings(f.fields)
 	}
-	mapping := make([]recordcopier.IndexMap, len(sourceFields))
-	destinationIndex := 0
-	for _, sortRule := range sortInfo {
-		if len(sourceFields) == 0 {
-			return mapping, nil
-		}
+}
+
+func (f *fieldSorter) processRules() error {
+	for _, sortRule := range f.sortInfo {
 		if sortRule.IsPattern {
-			re, err := regexp.Compile(sortRule.Text)
+			err := f.processPatternMatch(sortRule)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			for index := 0; index < len(sourceFields); index++ {
-				field := sourceFields[index]
-				if re.MatchString(field.name) {
-					mapping[destinationIndex] = recordcopier.IndexMap{
-						DestinationIndex: destinationIndex,
-						SourceIndex:      field.index,
-					}
-					destinationIndex++
-					sourceFields = append(sourceFields[:index], sourceFields[index+1:]...)
-					index--
-				}
-			}
-			continue
-		}
-		for index := 0; index < len(sourceFields); index++ {
-			field := sourceFields[index]
-			if field.name == sortRule.Text {
-				mapping[destinationIndex] = recordcopier.IndexMap{
-					DestinationIndex: destinationIndex,
-					SourceIndex:      field.index,
-				}
-				destinationIndex++
-				sourceFields = append(sourceFields[:index], sourceFields[index+1:]...)
-				index--
-			}
+		} else {
+			f.processExactMatch(sortRule)
 		}
 	}
+	return nil
+}
 
-	for _, field := range sourceFields {
-		mapping[destinationIndex] = recordcopier.IndexMap{
-			DestinationIndex: destinationIndex,
-			SourceIndex:      field.index,
+func (f *fieldSorter) processExactMatch(sortRule FieldSortInfo) {
+	for sourceIndex := 0; sourceIndex < len(f.fields); sourceIndex++ {
+		sourceField := f.fields[sourceIndex]
+		if sourceField == sortRule.Text {
+			f.markFieldDestination(sourceField)
+			f.fields = removeItem(f.fields, sourceIndex)
+			return
 		}
-		destinationIndex++
 	}
+}
 
-	return mapping, nil
+func (f *fieldSorter) processPatternMatch(sortRule FieldSortInfo) error {
+	regex, err := regexp.Compile(sortRule.Text)
+	if err != nil {
+		return err
+	}
+	for sourceIndex := 0; sourceIndex < len(f.fields); sourceIndex++ {
+		sourceField := f.fields[sourceIndex]
+		if regex.MatchString(sourceField) {
+			f.markFieldDestination(sourceField)
+			f.fields = removeItem(f.fields, sourceIndex)
+			sourceIndex--
+		}
+	}
+	return nil
+}
+
+func (f *fieldSorter) appendUnsortedFields() {
+	for _, field := range f.fields {
+		f.markFieldDestination(field)
+	}
+}
+
+func (f *fieldSorter) markFieldDestination(fieldName string) {
+	f.destinationIndices[f.destinationIndex] = fieldName
+	f.destinationIndex++
+}
+
+func removeItem(items []string, index int) []string {
+	return append(items[:index], items[index+1:]...)
 }

@@ -1,37 +1,49 @@
 package clean_nulls
 
 import (
-	"github.com/tlarsen7572/goalteryx/api"
-	"github.com/tlarsen7572/goalteryx/output_connection"
-	"github.com/tlarsen7572/goalteryx/presort"
+	"github.com/tlarsen7572/goalteryx/sdk"
 )
 
 type Plugin struct {
-	toolId int
-	output output_connection.OutputConnection
+	output sdk.OutputAnchor
+	info   *sdk.OutgoingRecordInfo
 }
 
-func (p *Plugin) Init(toolId int, _ string) bool {
-	p.toolId = toolId
-	p.output = output_connection.New(toolId, `Output`, 10)
-	return true
+func (p *Plugin) Init(provider sdk.Provider) {
+	p.output = provider.GetOutputAnchor(`Output`)
 }
 
-func (p *Plugin) PushAllRecords(_ int) bool {
-	panic("not valid: this is not an input tool")
+func (p *Plugin) OnInputConnectionOpened(connection sdk.InputConnection) {
+	p.info = connection.Metadata().Clone().GenerateOutgoingRecordInfo()
+	p.output.Open(p.info)
 }
 
-func (p *Plugin) Close(_ bool) {}
-
-func (p *Plugin) AddIncomingConnection(_ string, _ string) (api.IncomingInterface, *presort.PresortInfo) {
-	return &Ii{toolId: p.toolId, output: p.output}, nil
+func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
+	packet := connection.Read()
+	for packet.Next() {
+		p.info.CopyFrom(packet.Record())
+		for _, field := range p.info.StringFields {
+			if _, isNull := field.GetCurrentString(); isNull {
+				field.SetString(``)
+			}
+		}
+		for _, field := range p.info.IntFields {
+			if _, isNull := field.GetCurrentInt(); isNull {
+				field.SetInt(0)
+			}
+		}
+		for _, field := range p.info.BoolFields {
+			if _, isNull := field.GetCurrentBool(); isNull {
+				field.SetBool(false)
+			}
+		}
+		for _, field := range p.info.FloatFields {
+			if _, isNull := field.GetCurrentFloat(); isNull {
+				field.SetFloat(0)
+			}
+		}
+		p.output.Write()
+	}
 }
 
-func (p *Plugin) AddOutgoingConnection(_ string, connectionInterface *api.ConnectionInterfaceStruct) bool {
-	p.output.Add(connectionInterface)
-	return true
-}
-
-func (p *Plugin) GetToolId() int {
-	return p.toolId
-}
+func (p *Plugin) OnComplete() {}
