@@ -24,7 +24,7 @@ func TestSort(t *testing.T) {
 	output := runner.CaptureOutgoingAnchor(`Output`)
 	runner.ConnectInput(`Input`, `testfile.txt`)
 	runner.SimulateLifecycle()
-	metadata := output.Input.Metadata()
+	metadata := output.Config
 
 	expectedFields := []string{
 		"Field3",

@@ -23,22 +23,22 @@ func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
 	for packet.Next() {
 		p.info.CopyFrom(packet.Record())
 		for _, field := range p.info.StringFields {
-			if _, isNull := field.GetCurrentString(); isNull {
+			if field.GetNull() {
 				field.SetString(``)
 			}
 		}
 		for _, field := range p.info.IntFields {
-			if _, isNull := field.GetCurrentInt(); isNull {
+			if field.GetNull() {
 				field.SetInt(0)
 			}
 		}
 		for _, field := range p.info.BoolFields {
-			if _, isNull := field.GetCurrentBool(); isNull {
+			if field.GetNull() {
 				field.SetBool(false)
 			}
 		}
 		for _, field := range p.info.FloatFields {
-			if _, isNull := field.GetCurrentFloat(); isNull {
+			if field.GetNull() {
 				field.SetFloat(0)
 			}
 		}
