@@ -1,7 +1,7 @@
 package clean_nulls
 
 import (
-	"github.com/tlarsen7572/goalteryx/sdk"
+	"github.com/tlarsendataguy/goalteryx/sdk"
 )
 
 type Plugin struct {

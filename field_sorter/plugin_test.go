@@ -2,7 +2,7 @@ package field_sorter_test
 
 import (
 	"github.com/ayx-builders/go_tools/field_sorter"
-	"github.com/tlarsen7572/goalteryx/sdk"
+	"github.com/tlarsendataguy/goalteryx/sdk"
 	"reflect"
 	"testing"
 )
