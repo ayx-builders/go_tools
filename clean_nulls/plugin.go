@@ -5,17 +5,20 @@ import (
 )
 
 type Plugin struct {
-	output sdk.OutputAnchor
-	info   *sdk.OutgoingRecordInfo
+	output   sdk.OutputAnchor
+	info     *sdk.OutgoingRecordInfo
+	provider sdk.Provider
 }
 
 func (p *Plugin) Init(provider sdk.Provider) {
+	p.provider = provider
 	p.output = provider.GetOutputAnchor(`Output`)
 }
 
 func (p *Plugin) OnInputConnectionOpened(connection sdk.InputConnection) {
 	p.info = connection.Metadata().Clone().GenerateOutgoingRecordInfo()
 	p.output.Open(p.info)
+	p.provider.Io().UpdateProgress(0.0)
 }
 
 func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
@@ -44,6 +47,11 @@ func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
 		}
 		p.output.Write()
 	}
+	p.output.UpdateProgress(connection.Progress())
+	p.provider.Io().UpdateProgress(connection.Progress())
 }
 
-func (p *Plugin) OnComplete() {}
+func (p *Plugin) OnComplete() {
+	p.output.UpdateProgress(1.0)
+	p.provider.Io().UpdateProgress(1.0)
+}

@@ -56,6 +56,7 @@ func (p *Plugin) OnInputConnectionOpened(connection sdk.InputConnection) {
 	}
 	p.info = editor.GenerateOutgoingRecordInfo()
 	p.output.Open(p.info)
+	p.provider.Io().UpdateProgress(0.0)
 }
 
 func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
@@ -64,6 +65,11 @@ func (p *Plugin) OnRecordPacket(connection sdk.InputConnection) {
 		p.info.CopyFrom(packet.Record())
 		p.output.Write()
 	}
+	p.output.UpdateProgress(connection.Progress())
+	p.provider.Io().UpdateProgress(connection.Progress())
 }
 
-func (p *Plugin) OnComplete() {}
+func (p *Plugin) OnComplete() {
+	p.output.UpdateProgress(1.0)
+	p.provider.Io().UpdateProgress(1.0)
+}
