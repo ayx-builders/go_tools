@@ -4,3 +4,5 @@ github.com/tlarsen7572/goalteryx v0.5.15 h1:/wM+yB5I4RZTIjYg7NflgP6OSnUuiW2cSs0A
 github.com/tlarsen7572/goalteryx v0.5.15/go.mod h1:8Ogfq61O80O4m1Ob/oSLn+kHo6XGXxyvKZAdd9GGWdA=
 github.com/tlarsendataguy/goalteryx v0.5.19 h1:7MLm06fU4z+nBRaX7BFDrPZyyT90j0qjAclf/Ot0i2Q=
 github.com/tlarsendataguy/goalteryx v0.5.19/go.mod h1:O6tsex6/wvz52sG/RDYgIUdyYoRm+U3P8Qx5x54zkhQ=
+github.com/tlarsendataguy/goalteryx v0.5.20 h1:wWImxFDCiD1Rv3oqZpFS5q+cjGi4WTDi8nNJdTRhgBg=
+github.com/tlarsendataguy/goalteryx v0.5.20/go.mod h1:O6tsex6/wvz52sG/RDYgIUdyYoRm+U3P8Qx5x54zkhQ=
